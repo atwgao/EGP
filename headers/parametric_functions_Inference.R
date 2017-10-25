@@ -104,7 +104,7 @@ EGP.fitPWM <- function(x,type=1,prob0=NA,kappa0=NA,delta0=NA,sigma0=NA,xi0=NA,em
       return(matrix(pwm.theor - pwm.empir,ncol=3))
     }
     theta0 <- c(kappa0,sigma0,xi0)
-    res <- gmm(fct, x, theta0, optfct = "nlminb", lower = c(0.0001, 0.0001, 10^(-6)),  upper = c(Inf,Inf, .99),vcov="iid")
+    res <- gmm(fct, x, theta0, optfct = "nlminb", lower = c(0.0001, 0.0001, -2),  upper = c(Inf,Inf, .99),vcov="iid")
     thetahat <- res$coefficients
     names(thetahat) <- c("kappa","sigma","xi")
     return(thetahat)
