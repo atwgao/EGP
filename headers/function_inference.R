@@ -1,7 +1,7 @@
 dEGP.BB_squared = function(xg,param,model){
   return(dEGP.BB(xg,param,model)^2)
 }
-
+#comment add
 par_optm<-function(x,mGrid,model){
   kappa0 = 3; sigma0 = 2; xi0 = 0.15;
   n<-length(x)
