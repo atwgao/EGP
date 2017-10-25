@@ -191,7 +191,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   theta0_Pa =  1/mean(Hill(x)$gamma[1:(0.4*n)])
   theta0_GP = tryCatch({suppressWarnings(EGP.fitPWM(x=x,type=1,kappa0=2,sigma0=3,xi0=0.1))},error = function(e) {return(c(1,2,theta0_Pa))})
   if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=1,upper_gam=10)
-  }else bounds<-list(inits=theta0_GP[2:3],lower_gam=-0.5,upper_gam=0.99)
+  }else bounds<-list(inits=theta0_GP[2:3],lower_gam=-1,upper_gam=0.99)
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
   fitnonparEGP<-fitnonparEGP_pen<-matrix(NA,ncol=colsize,nrow=(n-1))
@@ -207,7 +207,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   if(model=="Pa") {
     bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=1, upper_gam = 10)#          
   }else{
-    bounds<-list(inits=theta0_GP[2:3],lower_gam=-0.5,upper_gam=1)
+    bounds<-list(inits=theta0_GP[2:3],lower_gam=-1,upper_gam=1)
     }
   }
   return(list(gamma=fitnonparEGP_pen[K,],K=K,cs=colsize,k1=k1))
