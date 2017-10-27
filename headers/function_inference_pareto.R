@@ -1,7 +1,7 @@
 dEGP.BB_squared = function(xg,param,model){
   return(dEGP.BB(xg,param,model)^2)
 }
-
+#pareto functions
 par_optm<-function(x,mGrid,model){
   kappa0 = 3; sigma0 = 2; xi0 = 0.15;
   n<-length(x)
@@ -191,7 +191,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   colsize<-M+2
   theta0_Pa =  1/mean(Hill(x)$gamma[1:(0.4*n)])
   theta0_GP = tryCatch({suppressWarnings(EGP.fitPWM(x=x,type=1,kappa0=2,sigma0=3,xi0=0.5))},error = function(e) {return(c(1,2,1/theta0_Pa))})
-  if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=1,upper_gam=5)
+  if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=0.5,upper_gam=100)
   }else bounds<-list(inits=theta0_GP[2:3],lower_gam=-1.5,upper_gam=1)
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
@@ -206,7 +206,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   fitnonparEGP_pen[k,c((1:mk),((M+1):colsize))]<-EGPBBnon.fitMLE.dq(y1,mk,max(y1),model,kap0=theta0_GP[1],shrink.coef=shrink.coef,bounds=bounds)$par
   print(k);
   if(model=="Pa") {
-    bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=1, upper_gam = 5)#          
+    bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=0.5, upper_gam = 100)#          
     }
   }
   return(list(gamma=fitnonparEGP_pen[K,],K=K,cs=colsize,k1=k1))
@@ -228,9 +228,9 @@ egpd_s<-function(data,omega=0,model ="GP",badu,m,warnings = FALSE, plot = FALSE,
 }
 
 
-nloglike <- function(p,rho,z1,k) {
+nloglike <- function(p,tau,z1,k) {
   n <- length(z1)
-  g <- p[1];   del<-p[2];   tau<-rho/p[1]
+  g <- p[1];   del<-p[2];   tau<-tau
   if (g > 0 && tau < 0 && del > max(-0.999,1/tau) && all((del*(1-z1^tau)+1) > 0)&&all(1+del*(1-(1+tau)*(z1^tau))>0)) {
     objf2 <- n*log(g)+(1/g+1)*sum(log(z1))+(1/g+1)*sum(log(1+del*(1-z1^tau)))-sum(log(1+del*(1-(1+tau)*(z1^tau))))
   } else { objf2 <- 1000000 }
@@ -239,7 +239,7 @@ nloglike <- function(p,rho,z1,k) {
 
 RevEPD<-function(data,rho=-1,mif=1){
   Z<-sort(data)
-  Hill.x<-rep(mean(ReIns::Hill(Z)$gamma[1:(0.5*length(Z))]),length(Z))
+  Hill.x<-Hill(data)$gamma#rep(mean(ReIns::Hill(Z)$gamma[1:(0.5*length(Z))]),length(Z))
   startv<-cbind(Hill.x,-0.01)
   p<-startv
   n <- length(Z)
@@ -248,7 +248,7 @@ RevEPD<-function(data,rho=-1,mif=1){
   for (k in (n-1):1){
     #print(k)
     z1<-Z[(n-k+1):n]/Z[n-k]
-    optEPD <-  tryCatch({optim(p=p[k,],nloglike,z1=z1,k=k,rho=rho,
+    optEPD <-  tryCatch({optim(p=p[k,],nloglike,z1=z1,k=k,tau=-3,
                                control=list(trace=0))$par},error=function(e) {return(c(NA,NA))})
     parsEPD<-as.vector(optEPD)
     Gamma[k,]<-parsEPD
