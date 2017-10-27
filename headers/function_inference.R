@@ -264,4 +264,3 @@ EGPBBnon.fitMLE.boot = function(data,i,mopt,model){
 EGP.fitML.boot <- function(data,i,type=1,prob0=NA,kappa0=NA,delta0=NA,sigma0=NA,xi0=NA,censoring=c(0,Inf),rounded=0.1,print=FALSE){
   return( EGP.fitML(data[i],type=type,prob0=prob0,kappa0=kappa0,delta0=delta0,sigma0=sigma0,xi0=xi0,censoring=censoring,rounded=rounded,print=print) )
 }
-

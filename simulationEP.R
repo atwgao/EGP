@@ -11,13 +11,14 @@ library(methods)
 source("./headers/Raux.R")
 source("./headers/Distributions.R")
 source("./headers/auxillary.R")
-source("./headers/Babu_m_function_inference3.R")
+source("./headers/function_inference.R")
 source("./headers/parametric_functions_Inference.R")
 
 
 simul.r <- function(r,n,m,babu,sigma=NA,xi=NA,empiric=FALSE,seed=1){
   set.seed(seed+r)
-  x <- rgamma(n,1,1)
+  #x <- rgamma(n,1,1)
+  x <- runif(n)
   #x <- ReIns::rburr(n,alpha=1/xi,rho=-1)
   #x <- ReIns::rfrechet(n,1/xi)
   #x<- abs(rt(n,1/xi))
@@ -28,11 +29,11 @@ simul.r <- function(r,n,m,babu,sigma=NA,xi=NA,empiric=FALSE,seed=1){
               H=ReIns:::GPDmle(x)$gamma[bb:(n-1)],EPD=Moment(x)$gamma[bb:(n-1)]))
 }
 
-nsim<-16
+nsim<-4
 m=1
 babu <- TRUE
 n<-50
-xi<-0
+xi<--1
 sigma<-1
 t1<-system.time(res <- mclapply(c(1:nsim),simul.r,n=n,m=ifelse(babu==T,1,m),babu=babu,sigma=sigma,xi=xi,seed=1,mc.cores=detectCores()))
 
