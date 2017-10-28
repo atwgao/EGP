@@ -37,15 +37,6 @@ xi<--1
 sigma<-1
 t1<-system.time(res <- mclapply(c(1:nsim),simul.r,n=n,m=ifelse(babu==T,1,m),babu=babu,sigma=sigma,xi=xi,seed=1,mc.cores=detectCores()))
 
-return.arg <- function(l,i){
-  return(l[[i]])
-}
-
-return.arg2 <- function(l){
-  if(!is.null(ncol(l[[1]]))) {return(array(unlist(l), dim = c(nrow(l[[1]]), ncol(l[[1]]), length(l))))
-  }else{ return(matrix(unlist(l),ncol=length(l)))}
-}
-
 EGP1<-rowMeans(return.arg2(lapply(res,return.arg,i=1)),na.rm=TRUE)
 EGP2<-rowMeans(return.arg2(lapply(res,return.arg,i=2)),na.rm=TRUE)
 H   <-rowMeans(return.arg2(lapply(res,return.arg,i=3)),na.rm=TRUE)
