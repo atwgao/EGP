@@ -11,7 +11,7 @@ source("./headers/parametric_functions_Inference.R")
 n<-100
 xi<-0.5
 
-x <- rburr(n,1/xi,-1)
+x <- rburr(n,1/xi,-0.5)
 ms<-8
 
 out<-function(i,o){
@@ -43,12 +43,25 @@ estimators[K,i]<-result[[i]]
 print(i)
 }
 
-#EPD(x,add=T,col=1,lwd=5)
-Hill(x,plot=T,ylim=c(0,1))
-lines(estimators[,ms+8],col=2,lwd=3)
-abline(h=xi)
-lines(estimators[,ms+3],lwd=4,col="red4")
+# #EPD(x,add=T,col=1,lwd=5)
+# Hill(x,plot=T,ylim=c(0,1),main="Estimatates of the EVI")
+# lines(estimators[,ms+9],col=2,lwd=3)
+# lines(i:(n-1),result[[i]],col=i+1,lwd=2)
 # abline(h=xi)
+# lines(estimators[,ms+3],lwd=4,col="red4")
+# # abline(h=xi)
+# 
+# plot(mfun1,type="l",lwd=4)
+# lines(mfun2,col="red4",lwd=4)
+# 
+# a<- data.frame(estimators)
+# names(a)<-c(paste("m_",c(1:ms),sep=""),paste("badu_",c(1:5),sep=""),paste("EPD_",c(1:4)))
+# b<-melt(a,id="K")
+# names(b)<-c("K","Estimator","Gamma")
+# p<-ggplot(b,aes(x=K,y=Gamma,col=Estimator))+geom_line()
+# library(plotly)
+# ggplotly(p)
+# 
+# save(b,file="data.RData")
 
-plot(mfun1,type="l",lwd=4)
-lines(mfun2,col="red4",lwd=4)
+
