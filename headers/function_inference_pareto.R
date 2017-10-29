@@ -179,7 +179,7 @@ EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=
 #   return(list(paramB=theta.hat,q.parEGP=theta_quant))
 # }
 
-egpd.fit <- function(data,omega,model,badu,m){
+egpd.fit <- function(data,omega,model,badu,m,mfun){
   x<-data
   k1=n#floor(n^(0.995)) # high k value if not chosen adaptively
   n<-length(x)
@@ -196,7 +196,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
   fitnonparEGP<-fitnonparEGP_pen<-matrix(NA,ncol=colsize,nrow=(n-1))
-  for(k in 1:(n-1)){mk<-ceiling(M*(k/n)^2);mk=ifelse(badu==T,ifelse(mk==Inf,1,mk),M)#floor(k/log(k))
+  for(k in 1:(n-1)){mk<-mfun[k];mk=ifelse(badu==T,ifelse(mk==Inf,1,mk),M)#floor(k/log(k))
   if(model=="GP"){
     y1<-xx[(n-k+1):n]-xx[n-k]
   }else{
@@ -212,8 +212,8 @@ egpd.fit <- function(data,omega,model,badu,m){
   return(list(gamma=fitnonparEGP_pen[K,],K=K,cs=colsize,k1=k1))
 }
 
-egpd_s<-function(data,omega=0,model ="GP",badu,m,warnings = FALSE, plot = FALSE, add = FALSE, main = "EGPD-BB estimates of EVI", ...){
-  gammas<-egpd.fit(data, omega,model,badu,m)
+egpd_s<-function(data,omega=0,model ="GP",badu,m,mfun,warnings = FALSE, plot = FALSE, add = FALSE, main = "EGPD-BB estimates of EVI", ...){
+  gammas<-egpd.fit(data, omega,model,badu,m,mfun)
   M<-ifelse(badu==T,ceiling(length(data)/log(length(data))),m)
   K<-gammas$K
   .end<-gammas$cs
@@ -237,7 +237,7 @@ nloglike <- function(p,tau,z1,k) {
   return((objf2))
 }
 
-RevEPD<-function(data,rho=-1,mif=1){
+RevEPD<-function(data,tau=-1,mif=1){
   Z<-sort(data)
   Hill.x<-Hill(data)$gamma#rep(mean(ReIns::Hill(Z)$gamma[1:(0.5*length(Z))]),length(Z))
   startv<-cbind(Hill.x,-0.01)
@@ -248,7 +248,7 @@ RevEPD<-function(data,rho=-1,mif=1){
   for (k in (n-1):1){
     #print(k)
     z1<-Z[(n-k+1):n]/Z[n-k]
-    optEPD <-  tryCatch({optim(p=p[k,],nloglike,z1=z1,k=k,tau=-3,
+    optEPD <-  tryCatch({optim(p=p[k,],nloglike,z1=z1,k=k,tau=tau,
                                control=list(trace=0))$par},error=function(e) {return(c(NA,NA))})
     parsEPD<-as.vector(optEPD)
     Gamma[k,]<-parsEPD
