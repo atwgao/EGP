@@ -196,7 +196,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
   fitnonparEGP<-fitnonparEGP_pen<-matrix(NA,ncol=colsize,nrow=(n-1))
-  for(k in 1:(n-1)){mk<-ceiling(M*k/n);mk=ifelse(badu==T,ifelse(mk==Inf,1,mk),M)#floor(k/log(k))
+  for(k in 1:(n-1)){mk<-ceiling(M*(k/n)^2);mk=ifelse(badu==T,ifelse(mk==Inf,1,mk),M)#floor(k/log(k))
   if(model=="GP"){
     y1<-xx[(n-k+1):n]-xx[n-k]
   }else{
