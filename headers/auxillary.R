@@ -1,5 +1,15 @@
 #Auxillary functions
 
+return.arg <- function(l,i){
+  return(l[[i]])
+}
+
+return.arg2 <- function(l){
+  if(!is.null(ncol(l[[1]]))) {return(array(unlist(l), dim = c(nrow(l[[1]]), ncol(l[[1]]), length(l))))
+  }else{ return(matrix(unlist(l),ncol=length(l)))}
+}
+
+
 movingAverage <- function(x, n=1, centered=FALSE) {
   if (centered) {
     before <- floor  ((n-1)/2)

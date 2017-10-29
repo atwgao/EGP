@@ -204,7 +204,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   }
   shrink.coef<-0.5*omega*(k/n)^(-2)
   fitnonparEGP_pen[k,c((1:mk),((M+1):colsize))]<-EGPBBnon.fitMLE.dq(y1,mk,max(y1),model,kap0=theta0_GP[1],shrink.coef=shrink.coef,bounds=bounds)$par
-  print(k);
+  #print(k);
   if(model=="Pa") {
     bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=0.5, upper_gam = 100)#          
     }
