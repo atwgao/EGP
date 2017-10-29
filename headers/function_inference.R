@@ -73,7 +73,7 @@ fitW_non = function(paramGPD,m,xg,kap,model){
 func_MLEnon = function(theta,xg,m,kap,model,shrink.coef){
   if(model!="GP" && model!="Pa") stop("Extensions limited to Pa and GP")
   if(model=="GP"){
-    if(theta[1]<=10^-6|theta[2] < (-1.5)|theta[2] > 1.5) return(10^7)
+    if(theta[1]<=10^-6|theta[2] < (-1.5)) return(10^7)
     H = evd:::pgpd(q=xg, scale=theta[1], shape=theta[2])
     h = evd:::dgpd(x=xg, scale=theta[1], shape=theta[2])
   }else{
@@ -99,6 +99,7 @@ func_repar_non = function(theta){
   
   return(param=c(sigma,xi))
 }
+
 
 func_repar_non2 = function(theta){
   xi = theta[1]
@@ -190,7 +191,7 @@ egpd.fit <- function(data,omega,model,badu,m){
   colsize<-M+2
   theta0_Pa =  1/mean(Hill(x)$gamma[1:(0.4*n)])
   theta0_GP = tryCatch({suppressWarnings(EGP.fitPWM(x=x,type=1,kappa0=2,sigma0=3,xi0=0.5))},error = function(e) {return(c(1,2,1/theta0_Pa))})
-  if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=1,upper_gam=10)
+  if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=1,upper_gam=5)
   }else bounds<-list(inits=theta0_GP[2:3],lower_gam=-1.5,upper_gam=1)
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
@@ -201,13 +202,11 @@ egpd.fit <- function(data,omega,model,badu,m){
   }else{
     y1<-xx[(n-k+1):n]/xx[n-k]
   }
-  shrink.coef<-0.5*omega*(k/n)^(-4)
+  shrink.coef<-0.5*omega*(k/n)^(-2)
   fitnonparEGP_pen[k,c((1:mk),((M+1):colsize))]<-EGPBBnon.fitMLE.dq(y1,mk,max(y1),model,kap0=theta0_GP[1],shrink.coef=shrink.coef,bounds=bounds)$par
   print(k);
   if(model=="Pa") {
-    bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=1, upper_gam = 10)#          
-  }else{
-    bounds<-list(inits=theta0_GP[2:3],lower_gam=-1.5,upper_gam=1)
+    bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=1, upper_gam = 5)#          
     }
   }
   return(list(gamma=fitnonparEGP_pen[K,],K=K,cs=colsize,k1=k1))
