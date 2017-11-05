@@ -73,7 +73,7 @@ fitW_non = function(paramGPD,m,xg,kap,model){
 func_MLEnon = function(theta,xg,m,kap,model,shrink.coef){
   if(model!="GP" && model!="Pa") stop("Extensions limited to Pa and GP")
   if(model=="GP"){
-    if(theta[1]<=10^-6|theta[2] < (0)|theta[2] > (0.99)) return(10^7)
+    if(theta[1]<=10^-6|theta[2] < (-1.5)) return(10^7)
     H = evd:::pgpd(q=xg, scale=theta[1], shape=theta[2])
     h = evd:::dgpd(x=xg, scale=theta[1], shape=theta[2])
   }else{
