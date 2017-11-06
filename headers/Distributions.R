@@ -2,7 +2,10 @@
 ###########################################
 
 
-model1<-function(n,t1,t2){return(200-((1-runif(n))^(-1/t2)-1)^(-1/t1))}
+model1<-function(n,t1,t2){
+  res<-((1-runif(n))^(-1/t2)-1)^(-1/t1)
+  return(max(res)+200-res)}
+
 model2<- function(n,l){return(1-exp(-rgamma(n,2,l)))}
 model3 <- function(n,t1,t2){return((((1-runif(n))^(-1/t2)-1)^(-1/t1)+1)^(-1))}
 model4 <- function(n,g){return(1-(1-runif(n))^(-g))}
