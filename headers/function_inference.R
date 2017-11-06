@@ -96,7 +96,7 @@ func_repar_non = function(theta){
   xi = xi;
   
   #### sigma
-  sigma = sigma;
+  sigma = sigma^2;
   
   return(param=c(sigma,xi))
 }
