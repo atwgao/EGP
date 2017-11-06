@@ -1,10 +1,10 @@
 #consolidate data
 
-distr<-"std_log_normal"
+distr<-"burr"
 results<-array(dim=c(199,44,500))
 
 for(i in 1:500){
-load(paste("results/GP/",distr,"/","GP_",distr,"_data_m_",i,".RData",sep=""))
+load(paste(distr,"/","GP_",distr,"_data_m_",i,".RData",sep=""))
   results[,,i]<-as.matrix(df)
   rm(df)
   print(i)

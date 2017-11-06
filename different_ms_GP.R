@@ -9,9 +9,9 @@ source("./headers/function_inference_pareto.R")
 source("./headers/parametric_functions_Inference.R")
 
 n<-200
-xi<--0.75
+xi<-0.5
 
-x<- model3(n,0.5,-3/2)#model4(n,-0.25)#rbeta(n,2,2)#rlnorm(n,0,1)#rgamma(n,1,1)#rburr(n,1/xi,-1) #exp(rgamma(n,4,2))#rfrechet(n,1/xi)#
+x<-rburr(n,1/xi,-0.5)#model4(n,-0.25)#rbeta(n,2,2)#rlnorm(n,0,1)#rgamma(n,1,1) #exp(rgamma(n,4,2))#rfrechet(n,1/xi)#
 ms<-38
 t1<-system.time({
   out<-function(i,o){
