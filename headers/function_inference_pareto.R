@@ -49,16 +49,14 @@ neg.log.lik.G.delta <- function(x,theta,type,model){
   return(obj)
 }
 
-fitW_non = function(paramGPD,m,xg,kap,model,beta){
+fitW_non = function(paramGPD,m,xg,kap,model){
   n = length(xg)
   w = numeric(m)
-  if(model!="GP" && model!="Pa" & model!="EP") stop("Extensions limited to Pa and GP")
+  if(model!="GP" && model!="Pa") stop("Extensions limited to Pa and GP")
   if(model=="GP"){
     H = evd:::pgpd(q=xg, scale=paramGPD[1], shape=paramGPD[2])
-  }else if(model == "Pa"){
-    H = ReIns::ppareto(xg,shape=paramGPD,scale=1)#ppareto(xg, gamma=paramGPD[1])
   }else{
-    H = ReIns::pepd(xg,gamma=paramGPD[2],kappa=paramGPD[1],tau=beta)
+    H = ReIns::ppareto(xg,shape=paramGPD,scale=1)#ppareto(xg, gamma=paramGPD[1])
   }
   for (k in 1:m){
     Fn = sum(H<=(k/m))/n;
@@ -72,22 +70,18 @@ fitW_non = function(paramGPD,m,xg,kap,model,beta){
   return(w)
 }
 
-func_MLEnon = function(theta,xg,m,kap,model,shrink.coef,beta){
-  if(model!="GP" & model!="Pa" & model!="EP") stop("Extensions limited to Pa, GP and EP")
+func_MLEnon = function(theta,xg,m,kap,model,shrink.coef){
+  if(model!="GP" && model!="Pa") stop("Extensions limited to Pa and GP")
   if(model=="GP"){
     if(theta[1]<=10^-6|theta[2] < (-1.5)) return(10^7)
     H = evd:::pgpd(q=xg, scale=theta[1], shape=theta[2])
     h = evd:::dgpd(x=xg, scale=theta[1], shape=theta[2])
-  }else if(model=="Pa"){
+  }else{
     if(theta[1]<=10^-6) return(10^7)
     H = ReIns::ppareto(xg,shape=theta[1],scale=1)#ppareto(xg, gamma=theta[1])
     h = ReIns::dpareto(xg,shape=theta[1],scale=1)#dpareto(xg, gamma=theta[1])
-  }else{
-    if(theta[1] < max((1/beta),-0.99) | theta[2] < 10^-6) return(10^7)
-    H = ReIns::pepd(xg,gamma=theta[2],kappa=theta[1],tau=beta)
-    h = ReIns::depd(xg,gamma=theta[2],kappa=theta[1],tau=beta)
   }
-  w.hat <- fitW_non(theta,m,xg,kap,model,beta)
+  w.hat <- fitW_non(theta,m,xg,kap,model)
   r = -sum(log(dBB(w=w.hat,u=H)) + log(h)) + shrink.coef*(1-m*w.hat[m])^2 
   #r <- ifelse(is.finite(r),r,10^6)
   return(r)
@@ -101,7 +95,7 @@ func_repar_non = function(theta){
   xi = xi;
   
   #### sigma
-  sigma = sigma^2;
+  sigma = sigma;
   
   return(param=c(sigma,xi))
 }
@@ -115,11 +109,11 @@ func_repar_non2 = function(theta){
   return(param=xi)
 }
 
-EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=NA,bounds,beta) {
+EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=NA,bounds) {
   n = length(x);
   xgrid = seq(0.001,xgridMax, length.out=1000)
   p = c(1:length(x))/(length(x)+1)
-  if(model!="GP" && model!="Pa" && model!="EP") stop("Extensions limited to Pa, EP and GP")
+  if(model!="GP" && model!="Pa") stop("Extensions limited to Pa and GP")
 
     theta0 =  bounds$inits#mean(Hill(x)$gamma[1:(0.25*n)])
   # init algorithm
@@ -146,7 +140,7 @@ EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=
     } 
     par = res$par;
     par.GPD = func_repar_non(par);
-  }else if(model == "Pa"){
+  }else{
     par.GPD = numeric(1);
     res <- tryCatch({optim(par=theta0, fn=function(theta,x,m,kap,model,shrink.coef) func_MLEnon(func_repar_non2(theta),x,m,kap,model,shrink.coef), x=x, m=m, shrink.coef=shrink.coef, model=model, kap=kap0,method="Brent",lower=bounds$lower_gam,upper=bounds$upper_gam)},error=function(e) return(list(par=theta0,value=1)))
     go = TRUE; tol=1e-6;
@@ -163,31 +157,8 @@ EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=
     }
     par<-res$par
     par.GPD = func_repar_non2(par)
-  }else{
-    par.GPD = numeric(2);
-    #res <- tryCatch({optim(par=theta0, fn=function(theta,x,m,kap,model,shrink.coef) func_MLEnon(func_repar_non(theta),x,m,kap,model,shrink.coef), x=x, m=m, model=model, kap=fit.parEGP.PWM[1],shrink.coef=shrink.coef)},error=function(e) return(list(par=theta0,value=1)))
-    res <- tryCatch({optim(par=theta0, fn=function(theta,x,m,kap,model,shrink.coef,beta) func_MLEnon(theta,x,m,kap,model,shrink.coef,beta), 
-                           x=x, m=m, model=model, kap=kap0,shrink.coef=shrink.coef, beta= beta,
-                           method="Nelder-Mead")},error=function(e) return(list(par=theta0,value=1)))
-    go = TRUE; tol=1e-6;
-    if(length(res)==2) go = FALSE
-    t1<-proc.time()
-    while (go){
-      if(matrix(proc.time()-t1)[3,]>2) go=FALSE
-      cat(".")
-      #res1 <- tryCatch({optim(par=res$par, fn=function(theta,x,m,kap,model,shrink.coef) func_MLEnon(func_repar_non(theta),x,m,kap,model,shrink.coef), x=x, m=m, model=model,kap=fit.parEGP.PWM[1],shrink.coef=shrink.coef)},error=function(e) return(list(par=theta0,value=1)))
-      res1 <- tryCatch({optim(par=res$par, fn=function(theta,x,m,kap,model,shrink.coef,beta) func_MLEnon(theta,x,m,kap,model,shrink.coef,beta), 
-                              x=x, m=m, model=model, kap=kap0,shrink.coef=shrink.coef, beta=beta,
-                              method="Nelder-Mead")},error=function(e) return(list(par=theta0,value=1)))
-      try(if(abs(res1$value-res$value)<tol)  {
-        go=FALSE
-      })
-      res = res1
-    } 
-    par = res$par;
-    par.GPD = par;
   }
-  par.W = fitW_non(par.GPD,m,x,kap=kap0,model,beta)
+  par.W = fitW_non(par.GPD,m,x,kap=kap0,model)
   fit.nonparEGP = c(par.W,par.GPD)
   if(model=="Pa") fit.nonparEGP = c(par.W,1/par.GPD)
   #q.nonparEGP = qEGP.BB(p,fit.nonparEGP,model);
@@ -208,7 +179,7 @@ EGPBBnon.fitMLE.dq = function(x,m,xgridMax=max(x),model,kap0,shrink.coef,params=
 #   return(list(paramB=theta.hat,q.parEGP=theta_quant))
 # }
 
-egpd.fit <- function(data,omega,model,badu,m,mfun,beta){
+egpd.fit <- function(data,omega,model,badu,m,mfun){
   x<-data
   k1=n#floor(n^(0.995)) # high k value if not chosen adaptively
   n<-length(x)
@@ -220,10 +191,8 @@ egpd.fit <- function(data,omega,model,badu,m,mfun,beta){
   colsize<-M+2
   theta0_Pa =  1/mean(Hill(x)$gamma[1:(0.4*n)])
   theta0_GP = tryCatch({suppressWarnings(EGP.fitPWM(x=x,type=1,kappa0=2,sigma0=3,xi0=0.5))},error = function(e) {return(c(1,2,1/theta0_Pa))})
-  theta0_EP = c(0,0.3)
-  if(model=="Pa") bounds<-list(inits=theta0_Pa,lower_gam=0.5,upper_gam=100)
-  if(model=="GP") bounds<-list(inits=theta0_GP[2:3])
-  if(model=="EP") bounds<-list(inits=theta0_EP)
+  if(model=="Pa") {bounds<-list(inits=theta0_Pa,lower_gam=0.5,upper_gam=100)
+  }else bounds<-list(inits=theta0_GP[2:3],lower_gam=-1.5,upper_gam=1)
   FixWeights<-FALSE #estimate 
   if(model=="Pa") colsize <- M+1
   fitnonparEGP<-fitnonparEGP_pen<-matrix(NA,ncol=colsize,nrow=(n-1))
@@ -234,7 +203,7 @@ egpd.fit <- function(data,omega,model,badu,m,mfun,beta){
     y1<-xx[(n-k+1):n]/xx[n-k]
   }
   shrink.coef<-0.5*omega*(k/n)^(-2)
-  fitnonparEGP_pen[k,c((1:mk),((M+1):colsize))]<-EGPBBnon.fitMLE.dq(y1,mk,max(y1),model,kap0=theta0_GP[1],shrink.coef=shrink.coef,bounds=bounds,beta=beta)$par
+  fitnonparEGP_pen[k,c((1:mk),((M+1):colsize))]<-EGPBBnon.fitMLE.dq(y1,mk,max(y1),model,kap0=theta0_GP[1],shrink.coef=shrink.coef,bounds=bounds)$par
   #print(k);
   if(model=="Pa") {
     bounds<-list(inits=fitnonparEGP_pen[k,(M+1)],lower_gam=0.5, upper_gam = 100)#          
@@ -243,8 +212,8 @@ egpd.fit <- function(data,omega,model,badu,m,mfun,beta){
   return(list(gamma=fitnonparEGP_pen[K,],K=K,cs=colsize,k1=k1))
 }
 
-egpd_s<-function(data,omega=0,model ="GP",badu,m,mfun,beta,warnings = FALSE, plot = FALSE, add = FALSE, main = "EGPD-BB estimates of EVI", ...){
-  gammas<-egpd.fit(data, omega,model,badu,m,mfun,beta)
+egpd_s<-function(data,omega=0,model ="GP",badu,m,mfun,warnings = FALSE, plot = FALSE, add = FALSE, main = "EGPD-BB estimates of EVI", ...){
+  gammas<-egpd.fit(data, omega,model,badu,m,mfun)
   M<-ifelse(badu==T,ceiling(length(data)/log(length(data))),m)
   K<-gammas$K
   .end<-gammas$cs
