@@ -213,7 +213,7 @@ egpd.fit <- function(data,omega,model,badu,m,mfun,beta){
   k1=n#floor(n^(0.995)) # high k value if not chosen adaptively
   n<-length(x)
   p<-c(1:length(x))/(length(x)+1)
-  M<-ifelse(badu==T,ceiling(n/log(n)),m)
+  M<-ifelse(badu==T,n,m)#ceiling(n/log(n))
   bb<-ifelse(badu==T,1,M)
   K<-bb:(n-1)
   xx<-sort(x)
