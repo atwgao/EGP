@@ -1,4 +1,5 @@
 #application
+setwd(paste(getwd(),"/application/application",sep=""))
 library(ReIns)
 library(gmm)
 library(ReIns)
@@ -8,7 +9,7 @@ library(dplyr)
 source("../../headers/Raux.R")
 source("../../headers/Distributions.R")
 source("../../headers/auxillary.R")
-source("../../headers/function_inference.R")
+source("../../headers/function_inference_pareto.R")
 source("../../headers/parametric_functions_Inference.R")
 source("QQplots.R")
 
@@ -23,11 +24,7 @@ secura <-secura %>%  mutate_all( funs(as.character(.)), names( .[,sapply(., is.f
 secura <- as.numeric(gsub(",","",secura))
 soa <- read.csv("soa.txt",header=F,sep="")$V1
 aon <- read.csv("aon.txt",header=F,sep="")$V2
-sp500<-read.csv("sp500.txt",header=F,sep=",")$V2
 cpt <-read.csv("cape_town_wind.txt",header=F,sep="")$V1
-load("rain30339001_Seasons.RData")
-rain <- read.csv("rain.csv",header=T)$pr
-temp <- read.csv("temparature.csv",header=T)$tas
 
 x<-alburq
 x<-x[x>=quantile(x)[4]]
